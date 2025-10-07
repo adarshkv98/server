@@ -1,4 +1,4 @@
-const Theater = require('../models/Theater');
+const Theater = require('../models/theaterModel');
 
 // CREATE THEATER //
 exports.createTheater = async (req, res) => {
