@@ -1,20 +1,38 @@
-const Theater = require('../models/theaterModel');
+import Theater from '../models/theaterModel.js';
 
-// CREATE THEATER //
-exports.createTheater = async (req, res) => {
+// ✅ CREATE THEATER (Admin only)
+export const createTheater = async (req, res) => {
   try {
-    if (!req.user.isAdmin) {
-      return res.status(403).json({ message: "Access denied: Admin only" });
+    if (!req.user || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Access denied: Admins only" });
     }
-    const theater = await Theater.create(req.body);
-    res.status(201).json({ message: 'Theater created successfully', theater });
+
+    const { name, location, screens, contact, movies } = req.body;
+
+    if (!name || !location || !location.address || !location.city || !screens) {
+      return res.status(400).json({ message: "Please provide all required fields" });
+    }
+
+    const newTheater = new Theater({
+      name,
+      location,
+      screens,
+      contact,
+      movies,
+    });
+
+    const savedTheater = await newTheater.save();
+    res.status(201).json({
+      message: "Theater created successfully",
+      theater: savedTheater,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create theater', error: error.message });
+    res.status(500).json({ message: "Failed to create theater", error: error.message });
   }
 };
 
-// GET ALL THEATERS //
-exports.getTheaters = async (req, res) => {
+// ✅ GET ALL THEATERS
+export const getTheaters = async (req, res) => {
   try {
     const theaters = await Theater.find().populate('movies').sort({ createdAt: -1 });
     res.status(200).json({ theaters });
@@ -23,8 +41,8 @@ exports.getTheaters = async (req, res) => {
   }
 };
 
-// GET THEATER BY ID //
-exports.getTheater = async (req, res) => {
+// ✅ GET THEATER BY ID
+export const getTheater = async (req, res) => {
   try {
     const theater = await Theater.findById(req.params.id).populate('movies');
     if (!theater) return res.status(404).json({ message: 'Theater not found' });
@@ -34,8 +52,8 @@ exports.getTheater = async (req, res) => {
   }
 };
 
-// UPDATE THEATER //
-exports.updateTheater = async (req, res) => {
+// ✅ UPDATE THEATER
+export const updateTheater = async (req, res) => {
   try {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: "Access denied: Admin only" });
@@ -48,8 +66,8 @@ exports.updateTheater = async (req, res) => {
   }
 };
 
-// DELETE THEATER //
-exports.deleteTheater = async (req, res) => {
+// ✅ DELETE THEATER
+export const deleteTheater = async (req, res) => {
   try {
     if (!req.user.isAdmin) {
       return res.status(403).json({ message: "Access denied: Admin only" });

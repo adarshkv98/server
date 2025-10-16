@@ -1,12 +1,6 @@
-import express from 'express';
-import {
-  register,
-  login,
-  updateUser,
-  deleteUser,
-  logoutUser,
-} from '../controllers/userController.js';
-import { protect } from '../middleware/authMiddleware.js';
+const express = require('express');
+const { register, login, updateUser, deleteUser, logoutUser, getAllUsers } = require('../controllers/userController');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -17,12 +11,16 @@ router.post('/register', register);
 router.post('/login', login);
 
 // LOGOUT USER
-router.post('/logout', protect, logoutUser);
+router.post('/logout',  logoutUser);
 
-// UPDATE USER (only logged-in user)
-router.put('/update', protect, updateUser);
+// UPDATE USER
+router.put('/:id', updateUser);
 
-// DELETE USER (only logged-in user)
-router.delete('/delete', protect, deleteUser);
+// DELETE USER
+router.delete('/:id',  deleteUser);
 
-export default router;
+// GET ALL USERS
+router.get('/', getAllUsers);
+
+
+module.exports = router; // ✅ proper CommonJS export

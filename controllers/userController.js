@@ -8,7 +8,7 @@ dotenv.config();
 export const register = async (req, res) => {
   try {
     const { name, email, password, role, mobilenumber } = req.body;
-
+      
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
@@ -29,7 +29,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+      user: { id: newUser._id, name: newUser.name, email: newUser.email ,mobilenumber:newUser.mobilenumber},
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -70,21 +70,22 @@ export const login = async (req, res) => {
 };
 
 // UPDATE USER //
+
 export const updateUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    const userId = req.params.id; // ✅ use param instead of req.user._id
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.mobilenumber = req.body.mobilenumber || user.mobilenumber;
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    await user.save();
-    res.json({ message: 'User updated successfully', user });
+    res.status(200).json({ message: "User updated successfully", user: updatedUser });
   } catch (error) {
-    res.status(500).json({ message: 'Update failed', error: error.message });
+    res.status(500).json({ message: "Update failed", error: error.message });
   }
 };
+
 
 // DELETE USER //
 export const deleteUser = async (req, res) => {
@@ -106,5 +107,17 @@ export const logoutUser = async (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
     res.status(500).json({ message: 'Logout failed', error: error.message });
+  }
+};
+
+
+// GET ALL USERS //
+export const getAllUsers = async (req, res) => {
+  try {
+
+    const users = await User.find().select('-password'); // exclude passwords for security
+    res.status(200).json({ message: "Users fetched successfully", users });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch users", error: error.message });
   }
 };

@@ -1,33 +1,26 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import connectDB from './config/db.js';
 
-// Load environment variables
+import userRoutes from './routes/userRoutes.js';
+import movieRoutes from './routes/movieRoutes.js';
+import theaterRoutes from './routes/theaterRoutes.js';
+import showtimeRoutes from './routes/showtimeRoutes.js';
+import seatRoutes from './routes/seatRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+
 dotenv.config();
-
-// Connect to MongoDB
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON
 app.use(express.json());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
-// Import Routes
-const userRoutes = require('./routes/userRoutes');
-const movieRoutes = require('./routes/movieRoutes');
-const theaterRoutes = require('./routes/theaterRoutes');
-const showtimeRoutes = require('./routes/showtimeRoutes');
-const seatRoutes = require('./routes/seatRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
+app.get('/', (req, res) => res.send('🎬 Movie Booking App Backend is Running...'));
 
-// Base route
-app.get('/', (req, res) => {
-  res.send('🎬 Movie Booking App Backend is Running...');
-});
-
-// Use Routes
 app.use('/api/users', userRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/theaters', theaterRoutes);
@@ -35,7 +28,4 @@ app.use('/api/showtimes', showtimeRoutes);
 app.use('/api/seats', seatRoutes);
 app.use('/api/bookings', bookingRoutes);
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
