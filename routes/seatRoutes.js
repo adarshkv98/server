@@ -1,20 +1,23 @@
 import express from 'express';
 import {
-  getAvailableSeats,
-  bookSeats,
-  cancelBooking,
+  createSeat,
+  getAllSeats,
+  getSeatById,
+  updateSeat,
+  upgradeSeat,
+  deleteSeat,
+  getSeatsByTheater
 } from '../controllers/seatController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// GET AVAILABLE SEATS for a showtime (any logged-in user)
-router.get('/:showtimeId', protect, getAvailableSeats);
-
-// BOOK SEATS for a showtime (any logged-in user)
-router.post('/book', protect, bookSeats);
-
-// CANCEL BOOKING (admin or booking owner)
-router.put('/cancel/:id', protect, cancelBooking);
+router.post('/', protect, createSeat);
+router.get('/', getAllSeats);
+router.get('/theater/:theaterId', getSeatsByTheater); // 👈 New route
+router.get('/:id', getSeatById);
+router.put('/:id', protect, updateSeat);
+router.patch('/upgrade/:id', protect, upgradeSeat);
+router.delete('/:id', protect, deleteSeat);
 
 export default router;

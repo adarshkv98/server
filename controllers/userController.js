@@ -121,3 +121,27 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch users", error: error.message });
   }
 };
+
+
+
+// GET USER PROFILE //
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.params.id || req.user?.id; // If admin fetches any user, or current user fetches own profile
+
+    const user = await User.findById(userId).select('-password'); // exclude password
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'User profile fetched successfully',
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to fetch user profile',
+      error: error.message,
+    });
+  }
+};

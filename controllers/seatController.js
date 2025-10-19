@@ -1,82 +1,100 @@
-const Showtime = require('../models/showtimeModel');
-const Booking = require('../models/bookingModel');
+import Seat from '../models/seatModel.js';
 
-// GET AVAILABLE SEATS FOR A SHOWTIME
-exports.getAvailableSeats = async (req, res) => {
+Seat.syncIndexes();
+
+
+
+// CREATE seat
+export const createSeat = async (req, res) => {
   try {
-    const { showtimeId } = req.params;
+    const { seatNumber, row, price, seatType, theater } = req.body;
 
-    const showtime = await Showtime.findById(showtimeId);
-    if (!showtime) return res.status(404).json({ message: 'Showtime not found' });
+    const existing = await Seat.findOne({ seatNumber, theater });
+    if (existing)
+      return res.status(400).json({ message: 'Seat already exists in this theater' });
 
-    // Find all bookings for this showtime
-    const bookings = await Booking.find({ showtime: showtimeId });
-
-    const bookedSeats = bookings.flatMap(b => b.seats);
-
-    const totalSeats = showtime.seats; // total seat count
-    const seatNumbers = Array.from({ length: totalSeats }, (_, i) => `S${i + 1}`);
-
-    const availableSeats = seatNumbers.filter(seat => !bookedSeats.includes(seat));
-
-    res.status(200).json({ availableSeats, bookedSeats });
+    const newSeat = await Seat.create({ seatNumber, row, price, seatType, theater });
+    res.status(201).json({ message: 'Seat created successfully', seat: newSeat });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to get seats', error: error.message });
+    res.status(500).json({ message: 'Failed to create seat', error: error.message });
   }
 };
 
-// BOOK SEATS
-exports.bookSeats = async (req, res) => {
+// GET all seats
+export const getAllSeats = async (req, res) => {
   try {
-    const { showtimeId, seats } = req.body;
-    const userId = req.user._id;
+    const seats = await Seat.find().populate('theater', 'name location');
+    res.status(200).json(seats);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch seats', error: error.message });
+  }
+};
 
-    const showtime = await Showtime.findById(showtimeId);
-    if (!showtime) return res.status(404).json({ message: 'Showtime not found' });
+// GET seat by ID
+export const getSeatById = async (req, res) => {
+  try {
+    const seat = await Seat.findById(req.params.id).populate('theater', 'name location');
+    if (!seat) return res.status(404).json({ message: 'Seat not found' });
+    res.status(200).json(seat);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch seat', error: error.message });
+  }
+};
 
-    // check if seats already booked
-    const existingBookings = await Booking.find({ showtime: showtimeId });
-    const bookedSeats = existingBookings.flatMap(b => b.seats);
+// UPDATE seat (full update)
+export const updateSeat = async (req, res) => {
+  try {
+    const updatedSeat = await Seat.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedSeat) return res.status(404).json({ message: 'Seat not found' });
+    res.status(200).json({ message: 'Seat updated successfully', seat: updatedSeat });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update seat', error: error.message });
+  }
+};
 
-    const alreadyBooked = seats.filter(seat => bookedSeats.includes(seat));
-    if (alreadyBooked.length > 0) {
-      return res.status(400).json({ message: 'Seats already booked', seats: alreadyBooked });
+// UPGRADE seat (for example, change type/price)
+export const upgradeSeat = async (req, res) => {
+  try {
+    const { seatType, price } = req.body;
+    const seat = await Seat.findById(req.params.id);
+    if (!seat) return res.status(404).json({ message: 'Seat not found' });
+
+    seat.seatType = seatType || seat.seatType;
+    seat.price = price || seat.price;
+    await seat.save();
+
+    res.status(200).json({ message: 'Seat upgraded successfully', seat });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to upgrade seat', error: error.message });
+  }
+};
+
+// DELETE seat
+export const deleteSeat = async (req, res) => {
+  try {
+    const seat = await Seat.findByIdAndDelete(req.params.id);
+    if (!seat) return res.status(404).json({ message: 'Seat not found' });
+    res.status(200).json({ message: 'Seat deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete seat', error: error.message });
+  }
+};
+
+// GET SEATS BY THEATER ID
+export const getSeatsByTheater = async (req, res) => {
+  try {
+    const { theaterId } = req.params;
+
+    // Find all seats for this theater
+    const seats = await Seat.find({ theater: theaterId }).populate('theater', 'name location');
+
+    if (!seats || seats.length === 0) {
+      return res.status(404).json({ message: 'No seats found for this theater' });
     }
 
-    const totalPrice = seats.length * showtime.pricePerSeat;
-
-    const newBooking = await Booking.create({
-      seats,
-      totalPrice,
-      showtime: showtimeId,
-      movie: showtime.movie,
-      theater: showtime.theater,
-      user: userId,
-      status: 'confirmed',
-    });
-
-    res.status(201).json({ message: 'Seats booked successfully', booking: newBooking });
+    res.status(200).json(seats);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to book seats', error: error.message });
+    res.status(500).json({ message: 'Failed to fetch seats', error: error.message });
   }
 };
 
-// CANCEL BOOKING
-exports.cancelBooking = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id);
-
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
-
-    if (!req.user.isAdmin && booking.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
-    booking.status = 'cancelled';
-    await booking.save();
-
-    res.status(200).json({ message: 'Booking cancelled successfully', booking });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to cancel booking', error: error.message });
-  }
-};
