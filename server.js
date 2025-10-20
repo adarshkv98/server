@@ -10,6 +10,7 @@ import showtimeRoutes from './routes/showtimeRoutes.js';
 import seatRoutes from './routes/seatRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 
 dotenv.config();
@@ -30,5 +31,6 @@ app.use('/api/showtimes', showtimeRoutes);
 app.use('/api/seats', seatRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
