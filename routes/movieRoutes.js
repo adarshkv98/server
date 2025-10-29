@@ -25,4 +25,5 @@ router.get('/', getAllMovies);
 // GET MOVIE BY ID - public route
 router.get('/:id', getMovieById);
 
+
 export default router;
