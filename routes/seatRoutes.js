@@ -1,23 +1,24 @@
-import express from 'express';
+import express from "express";
 import {
   createSeat,
   getAllSeats,
   getSeatById,
   updateSeat,
-  upgradeSeat,
   deleteSeat,
-  getSeatsByTheater
-} from '../controllers/seatController.js';
-import { protect } from '../middleware/authMiddleware.js';
+  getSeatsByTheater,
+  createBulkSeats,
+} from "../controllers/seatController.js";
 
 const router = express.Router();
 
-router.post('/', protect, createSeat);
-router.get('/', getAllSeats);
-router.get('/theater/:theaterId', getSeatsByTheater); // 👈 New route
-router.get('/:id', getSeatById);
-router.put('/:id', protect, updateSeat);
-router.patch('/upgrade/:id', protect, upgradeSeat);
-router.delete('/:id', protect, deleteSeat);
+router.post("/", createSeat);
+router.get("/", getAllSeats);
+router.get("/:id", getSeatById);
+router.put("/:id", updateSeat);
+router.delete("/:id", deleteSeat);
+router.get("/theater/:theaterId", getSeatsByTheater);
+
+// 🔥 Bulk seat creation (20 per row)
+router.post("/bulk", createBulkSeats);
 
 export default router;

@@ -25,4 +25,7 @@ router.put('/:id', protect, updateTheater);
 // DELETE THEATER - admin only
 router.delete('/:id', protect, deleteTheater);
 
+
+
+
 export default router;

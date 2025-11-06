@@ -7,10 +7,11 @@ import userRoutes from './routes/userRoutes.js';
 import movieRoutes from "./routes/movieRoutes.js";
 import theaterRoutes from './routes/theaterRoutes.js';
 import showtimeRoutes from './routes/showtimeRoutes.js';
-import seatRoutes from './routes/seatRoutes.js';
+
 import bookingRoutes from './routes/bookingRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import seatRoutes from "./routes/seatRoutes.js";
 
 // ✅ Load environment variables first
 dotenv.config();
@@ -42,7 +43,7 @@ app.use('/api/users', userRoutes);
 app.use("/api/movies", movieRoutes);
 app.use('/api/theaters', theaterRoutes);
 app.use('/api/showtimes', showtimeRoutes);
-app.use('/api/seats', seatRoutes);
+app.use("/api/seats", seatRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
