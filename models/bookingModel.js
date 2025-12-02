@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema(
   {
     seats: [
       {
-        type: String,
+        type: String, // e.g. "A1", "A2"
         required: true,
       },
     ],
@@ -14,44 +14,38 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "pending",
+      enum: ['pending', 'confirmed', 'cancelled'],
+      default: 'pending', // ✅ must be string
     },
     bookingRef: {
       type: String,
       unique: true,
-      default: () => `BOOK-${Date.now()}`,
+      default: () => `BOOK-${Date.now()}`, // auto-generate unique ID
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     movie: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Movie",
+      ref: 'Movie',
       required: true,
     },
     theater: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Theater",
+      ref: 'Theater', // ✅ must match model name
       required: true,
     },
     showtime: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Showtime",
-    },
-    date: {
-      type: String,
-      required: true,
-    },
-    time: {
-      type: String,
-      required: true,
+      ref: 'Showtime', // optional relation to showtime model
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-const Booking = mongoose.model("Booking", bookingSchema);
+const Booking = mongoose.model('Booking', bookingSchema);
 module.exports = Booking;

@@ -1,8 +1,14 @@
 const express = require('express');
-const { register, login, updateUser, deleteUser, logoutUser, getAllUsers } = require('../controllers/userController');
+const { 
+  register, 
+  login, 
+  updateUser, 
+  deleteUser, 
+  logoutUser, 
+  getAllUsers, 
+  getUserProfile 
+} = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
-const { getUserProfile } = require('../controllers/userController');
-
 
 const router = express.Router();
 
@@ -13,23 +19,18 @@ router.post('/register', register);
 router.post('/login', login);
 
 // LOGOUT USER
-router.post('/logout',  logoutUser);
+router.post('/logout', logoutUser);
 
-// UPDATE USER
-router.put('/:id', updateUser);
-
-// DELETE USER
-router.delete('/:id',  deleteUser);
-
-// GET ALL USERS
+// GET ALL USERS (admin only)
 router.get('/', getAllUsers);
 
-
-// GET USER PROFILE
-router.get('/:id', protect, getUserProfile);
-
-
+// ✅ GET LOGGED-IN USER PROFILE
 router.get('/profile/me', protect, getUserProfile);
 
+// ✅ UPDATE USER PROFILE
+router.put('/:id', protect, updateUser);
 
-module.exports = router; // ✅ proper CommonJS export
+// ✅ DELETE USER
+router.delete('/:id', protect, deleteUser);
+
+module.exports = router;
